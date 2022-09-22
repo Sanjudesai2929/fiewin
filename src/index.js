@@ -39,7 +39,7 @@ const index = "0"
 
 io.on("connection", async (socket) => {
     // const req = socket.request;
-
+console.log("connection",socket.id);
     socket.on("loginid", async (data) => {
         // console.log("loginid ", data);
         // const wallet_amount = await WalletModel.find({ userId: data })
@@ -119,6 +119,8 @@ io.on("connection", async (socket) => {
             }
             itimer = seconds
             socket.emit("countdown", seconds)
+            socket.broadcast.emit("countdown", seconds)
+
             if (itimer == 03) {
 
                 // socket.on("check_result", async (data) => {
