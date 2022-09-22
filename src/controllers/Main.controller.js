@@ -151,14 +151,16 @@ exports.userOrderSaved = async (req, res) => {
     try {
       const id =req.params.id
      const user = await FastParityModel.find({ user: id })
+     var data1
+
      const result = await fastParityResultModel.find()
      var winnum = new Map(result.map(({win_number , period }) => ([period, win_number])));
      var winuser = new Map(result.map(({winuser , period }) => ([period, winuser])));
-
-     var arrayData = user.map(obj => ({obj,  winnumber:winnum.get(obj.period),status:winuser.get(obj.period)&&winuser.get(obj.period).includes(id)?"profit":"loss" }));
+console.log("aa",winnum.get("22092250")?"true":"false");
+     var arrayData = user.map(obj => ({obj,  winnumber:winnum.get(obj.period) ?winnum.get(obj.period):{},status:winnum.get(obj.period) ?winuser.get(obj.period)&&winuser.get(obj.period).includes(id)?"profit":"loss":"" }));
 // console.log(arrayData[0].obj.period);
-    const data1=arrayData.map((data)=>{
-        return {period:data.obj.period,select:data.obj.select_number,point:data.obj.point,win_number:data.winnumber,status:data.status,amount:data.status == "profit"?data.obj.Amount:(data.obj.point -((data.obj.point) * 0.20 / 10)).toFixed(2)}
+    data1=arrayData.map((data)=>{
+        return {period:data.obj.period,select:data.obj.select_number,point:data.obj.point,win_number:data.winnumber,status:data.status,amount:!data.status == ""?data.status == "profit"?data.obj.Amount:(data.obj.point -((data.obj.point) * 0.20 / 10)).toFixed(2):""}
       })
         res.status(201).json({
             status: true,

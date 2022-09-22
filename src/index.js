@@ -95,8 +95,9 @@ io.on("connection", async (socket) => {
             const saveData = await finaldata.save();
             const fastParityData = await FastParityModel.find().sort({ _id: -1 })
             const final = [finaldata]
-            socket.broadcast.emit("fast_parity", final)
-            socket.emit("fast_parity", final)
+
+            socket.emit("fast_parity_data", fastParityData)
+            socket.broadcast.emit("fast_parity_data", fastParityData)
         }
     })
     const fastParityData = await FastParityModel.find().sort({ _id: -1 })
@@ -183,10 +184,18 @@ io.on("connection", async (socket) => {
                         var number_res = response1.length && response1.reduce(function (prev, current) {
                             return (prev.count < current.count) ? prev : current
                         })
-
+                 
+                         const final_color=[]
+                         response.map((data)=>{
+                            if(data.count == color_res.count){
+                                 final_color.push(data.select_number)
+                            }
+                         })
+                      
+                 
                         var res1
                         // const final = await FastParityModel.find({ $or: [{ period: result[0].period }, { $or: [{ select_number: color_res.select_number }, { select_number: number_res.select_number }] }] })
-                        const final = await FastParityModel.find({ $or: [{ $and: [{ period: date_check + num, select_number: color_res.select_number }] }, { $and: [{ period: date_check + num, select_number: number_res.select_number }] }] })
+                        const final = await FastParityModel.find({ $or: [{ $and: [{ period: date_check + num, select_number:{$in: final_color}  }] }, { $and: [{ period: date_check + num, select_number: number_res.select_number }] }] })
                         console.log("winuser", final);
                         const winuserId = []
                         final.map((data) => {
@@ -203,7 +212,7 @@ io.on("connection", async (socket) => {
                             })
                             const res = new fastParityResultModel({
                                 period: result[0].period, winuser: winuserId,
-                                win_number: { color: color_res.select_number, number: number_res.select_number },totalPrice:""
+                                win_number: { color: final_color, number: number_res.select_number }, totalPrice: ""
                             })
 
                             res1 = res
@@ -255,8 +264,6 @@ io.on("connection", async (socket) => {
         }, 1000);
     }
     startTimer(Date.now());
-
-
 
     const result_all = await fastParityResultModel.find().sort({ _id: -1 }).limit(25)
     // socket.emit("period_number1", date_check + (Number(num) + 1))
